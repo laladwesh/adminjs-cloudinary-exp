@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
 const ImageSchema = new mongoose.Schema({
-  imageUrl: { type: String }
+  imageKeys: { type: [String], default: [] },
+  imageUrls: { type: [String], default: [] }
 });
 
 export default mongoose.model('Image', ImageSchema);
