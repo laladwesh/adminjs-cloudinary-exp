@@ -115,8 +115,13 @@ class CloudinaryProvider extends BaseProvider {
 
 async function start() {
   await mongoose.connect(
-    process.env.MONGODB_URI || "mongodb://localhost:27017/adminjs-cloud"
-  );
+    process.env.MONGODB_URI
+  ).then(() => {
+    console.log("Connected to MongoDB" , process.env.MONGODB_URI );
+  }).catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  });
 
   const componentLoaderInstance = new ComponentLoader();
 
@@ -217,8 +222,15 @@ async function start() {
     rootPath: "/admin",
   });
 
-  if (process.env.NODE_ENV !== "production") {
+  // Ensure AdminJS frontend components are bundled so custom components are available.
+  // In development we use watch; in production we still need the bundler to run once
+  // so that `/admin/frontend/assets/*.js` files are generated. Running `watch()`
+  // will build assets. For production, you can replace this with a build-time
+  // bundling step if preferred.
+  try {
     await adminJs.watch();
+  } catch (watchErr) {
+    console.warn('AdminJS bundler warning:', watchErr);
   }
 
   // AdminJS authentication
