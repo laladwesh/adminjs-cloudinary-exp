@@ -222,16 +222,19 @@ async function start() {
     rootPath: "/admin",
   });
 
-  // Ensure AdminJS frontend components are bundled so custom components are available.
-  // In development we use watch; in production we still need the bundler to run once
-  // so that `/admin/frontend/assets/*.js` files are generated. Running `watch()`
-  // will build assets. For production, you can replace this with a build-time
-  // bundling step if preferred.
-  try {
-    await adminJs.watch();
-  } catch (watchErr) {
-    console.warn('AdminJS bundler warning:', watchErr);
-  }
+// Build AdminJS frontend bundles at build time
+if (process.env.BUILD_ADMIN_BUNDLES === "true") {
+  console.log("Building AdminJS frontend bundles...");
+  await adminJs.watch();
+  console.log("AdminJS bundles built");
+  process.exit(0);
+}
+
+// Watch ONLY in development
+if (process.env.NODE_ENV === "development") {
+  await adminJs.watch();
+}
+
 
   // AdminJS authentication
   const ADMIN = {
